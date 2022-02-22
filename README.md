@@ -10,7 +10,7 @@ NativeUI_Reloaded: https://cdn.discordapp.com/attachments/805412153908789258/805
 
 
 How to create a Ped:
-1.) Type /ped:make
+1.) Type /pedmaker
 2.) Go where ever you want to place you Ped
 3.) Press "Create Ped at Coords"
 4.) Enter Name (only Config)
