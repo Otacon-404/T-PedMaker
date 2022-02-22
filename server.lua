@@ -1,7 +1,7 @@
 local loadFile = LoadResourceFile(GetCurrentResourceName(), "peds.json")
 local peds = {} 
 
-
+ 
 RegisterServerEvent('tunlysPedMaker:server:insertJSON')
 AddEventHandler('tunlysPedMaker:server:insertJSON', function(name, xCoord, yCoord, zCoord, resheading, respedModel, RenderDistStr)
     

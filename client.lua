@@ -872,7 +872,7 @@ local pedModels = {
 }
 
 --[[ 
-CHANGELOG:
+CHANGELOG: 
 - Menu Overhaul
 - Repaired Ped Names
 - Null Checker

@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'PedMaker'
 description 'Tunlys PedMaker'
-version '1.1.0'
+version '1.1.0' 
 
 lua54 'yes'
 
