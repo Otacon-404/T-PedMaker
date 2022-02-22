@@ -3,14 +3,7 @@ game 'gta5'
 
 author 'PedMaker'
 description 'Tunlys PedMaker'
-version '1.1.0' 
-
-lua54 'yes'
-
-escrow_ignore {
-  'client.lua',
-  'server.lua',
-}
+version '1.1.0'
 
 server_scripts {
     'server.lua',
