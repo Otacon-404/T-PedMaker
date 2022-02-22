@@ -5,8 +5,9 @@ Thank you for purchasing Tunly's PedMaker
 Discord for support/ suggestions: https://discord.gg/7m2Qxe59Da
 
 !!! DEPENDENCYS FOR THIS SCRIPT IS NativeUI & NativeUI_Reloaded!!!
-NativeUI: https://cdn.discordapp.com/attachments/805412153908789258/805412711831306270/NativeUI.zip
-NativeUI_Reloaded: https://cdn.discordapp.com/attachments/805412153908789258/805413326116225054/NativeUILua_Reloaded.zip
+> NativeUI: https://cdn.discordapp.com/attachments/805412153908789258/805412711831306270/NativeUI.zip
+> 
+> NativeUI_Reloaded: https://cdn.discordapp.com/attachments/805412153908789258/805413326116225054/NativeUILua_Reloaded.zip
 
 
 How to create a Ped:
