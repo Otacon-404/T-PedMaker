@@ -310,7 +310,7 @@ local pedModels = {
 	"csb_brucie2",
 	"csb_bryony",
 	"csb_burgerdrug",
-	"csb_car3guy",
+	"csb_car3guy1",
 	"csb_car3guy2",
 	"csb_celeb_01",
 	"csb_chef",
@@ -429,9 +429,6 @@ local pedModels = {
 	"g_m_y_salvagoon_03",
 	"g_m_y_strpunk_01",
 	"g_m_y_strpunk_02",
-	"hc_driver",
-	"hc_gunma",
-	"hc_hacker",
 	"ig_abigail",
 	"ig_agatha",
 	"ig_agent",
@@ -874,14 +871,27 @@ local pedModels = {
 	"u_m_y_zombie_01",
 }
 
---[[ TODO: FIX PED NAMES ]]
+--[[ 
+CHANGELOG:
+- Menu Overhaul
+- Repaired Ped Names
+- Null Checker
+
+]]
 
 _menuPool = NativeUI.CreatePool()
-mainMenu = NativeUI.CreateMenu("Ped Maker", "Creating Ped...", 1, 1)       
-_menuPool:Add(mainMenu)
+pedMenu = NativeUI.CreateMenu("Ped Maker", "Creating or Remove Peds...", 1, 1)       
+_menuPool:Add(pedMenu)
 _menuPool:MouseControlsEnabled (false);
 _menuPool:MouseEdgeEnabled (false);
 _menuPool:ControlDisablingEnabled(false);
+
+local mainMenu = _menuPool:AddSubMenu(pedMenu, "~g~Create Ped")
+pedMenu:AddItem(mainMenu)
+
+local removeMenu = _menuPool:AddSubMenu(pedMenu, "~r~Remove Ped")
+pedMenu:AddItem(mainMenu)
+
 
 local ped
 local xCoord
@@ -903,6 +913,7 @@ local lped
 local isPlayerNear = false
 local isPedSpawned = false
 local spawnedPeds = {}
+local allPedsInserted = false
 
 local xCoordItem = NativeUI.CreateItem("X-Coordinate", "")
 mainMenu:AddItem(xCoordItem)
@@ -916,24 +927,103 @@ mainMenu:AddItem(headingItem)
 local placeholder = NativeUI.CreateItem("", "")
 mainMenu:AddItem(placeholder)
 
-local continue = NativeUI.CreateItem("~g~Create Ped at Coords", "")
+local continue = _menuPool:AddSubMenu(mainMenu, "~g~Create Ped at Coords")
 mainMenu:AddItem(continue)
 
-local placeholder2 = NativeUI.CreateItem("", "")
-mainMenu:AddItem(placeholder2)
+
+mainMenu.OnMenuChanged = function(sender, nextMenu, forward)
+    if nextMenu == continue then
+        RequestModel(GetHashKey("a_f_m_beach_01"))
+        while not HasModelLoaded(GetHashKey("a_f_m_beach_01")) do
+            Wait(10)
+        end
+		
+		xSpawnedCoord = xCoord
+		ySpawnedCoord = yCoord
+		zSpawnedCoord = zCoord
+		Spawnedheading = heading
+		
+        ped = CreatePed(4, GetHashKey("a_f_m_beach_01"), xCoord, yCoord, zCoord - 1.0, heading, false, false)
+        FreezeEntityPosition(ped, true)
+        SetEntityHeading(ped, heading)
+        SetEntityInvincible(ped, true)
+        SetBlockingOfNonTemporaryEvents(ped, true)
+        PedCreated = true
+	end
+end
+
+pedMenu.OnMenuChanged = function(sender, nextMenu, forward)
+    if nextMenu == removeMenu and not allPedsInserted then
+		addAllPeds()
+		allPedsInserted = true
+	end
+end
+
+function addAllPeds()
+	if spawnedPeds then
+		for _, spawnedPeds in ipairs(spawnedPeds) do
+			
+
+			local ItemName = tostring(spawnedPeds.name)
+			local Item = _menuPool:AddSubMenu(removeMenu, ItemName)
+			
+			local RemXCoord = NativeUI.CreateItem("X: "..math.round(spawnedPeds.x, 3), "")
+			Item:AddItem(RemXCoord)
+			local RemYCoord = NativeUI.CreateItem("Y: "..math.round(spawnedPeds.y, 3), "")
+			Item:AddItem(RemYCoord)
+			local RemZCoord = NativeUI.CreateItem("Z: "..math.round(spawnedPeds.z, 3), "")
+			Item:AddItem(RemZCoord)
+			local RemHeading = NativeUI.CreateItem("Heading: "..math.round(spawnedPeds.heading, 3), "")
+			Item:AddItem(RemHeading)
+			local RemModel = NativeUI.CreateItem("Model: "..spawnedPeds.pedModel, "")
+			Item:AddItem(RemModel)
+			local RemRenderDist = NativeUI.CreateItem("Render Distance: "..spawnedPeds.renderDist, "")
+			Item:AddItem(RemRenderDist)
+			
+			local placeholder = NativeUI.CreateItem("", "")
+			Item:AddItem(placeholder)
+
+			local Goto = NativeUI.CreateItem("~g~Goto", "")
+			Item:AddItem(Goto)
+
+			local remove = NativeUI.CreateItem("~r~Remove", "")
+			Item:AddItem(remove)
+			
+			Item.OnItemSelect = function(sender, item, index)
+				if item == Goto then
+					SetEntityCoords(PlayerPedId(), math.round(spawnedPeds.x, 3), math.round(spawnedPeds.y, 3), math.round(spawnedPeds.z, 3), false, false, false, false)
+				end
+				if item == remove then
+					TriggerServerEvent('tunlysPedMaker:server:removePed', spawnedPeds.name)
+					DeleteEntity(spawnedPeds.ped)
+					Item:Visible(false)
+				end
+			end
+
+			_menuPool:MouseControlsEnabled (false);
+			_menuPool:MouseEdgeEnabled (false);
+			_menuPool:ControlDisablingEnabled(false);
+		end
+	end
+end
+
+_menuPool:MouseControlsEnabled (false);
+_menuPool:MouseEdgeEnabled (false);
+_menuPool:ControlDisablingEnabled(false);
+
 
 local nameItem = NativeUI.CreateItem("Name", "")
-mainMenu:AddItem(nameItem)
+continue:AddItem(nameItem)
 
 local pedModelItem = NativeUI.CreateListItem("Ped Model", pedModels, 1)
-mainMenu:AddItem(pedModelItem)
-mainMenu.OnListChange = function(sender, item, index)
+continue:AddItem(pedModelItem)
+continue.OnListChange = function(sender, item, index)
     if item == pedModelItem then
         local model = item:IndexToItem(index)
-
+		
         SetModelAsNoLongerNeeded(GetHashKey(GetEntityModel(ped)))
         DeleteEntity(ped)
-
+		
         RequestModel(GetHashKey(model))
         while not HasModelLoaded(GetHashKey(model)) do
             Wait(10)
@@ -948,13 +1038,13 @@ mainMenu.OnListChange = function(sender, item, index)
 end
 
 local renderDistanceItem = NativeUI.CreateItem("Render Distance", "")
-mainMenu:AddItem(renderDistanceItem)
+continue:AddItem(renderDistanceItem)
 renderDistanceItem:RightLabel("50")
 
 local FinishItem = NativeUI.CreateItem("~g~Finish", "")
-mainMenu:AddItem(FinishItem)
+continue:AddItem(FinishItem)
 
-mainMenu.OnItemSelect = function(sender, item, index)
+continue.OnItemSelect = function(sender, item, index)
     if item == renderDistanceItem then
         local inserted = KeyboardInput("Render Distance (1 - 9999)", RenderDistStr, 20)
         if tostring(inserted) then
@@ -963,7 +1053,6 @@ mainMenu.OnItemSelect = function(sender, item, index)
             RenderDistStr = RenderDist_res
         end
     end
-
 	if item == nameItem then
         local inserted = KeyboardInput("", NameStr, 20)
         if tostring(inserted) then
@@ -972,33 +1061,16 @@ mainMenu.OnItemSelect = function(sender, item, index)
             NameStr = Name_res
         end
     end
-
-
-    if item == continue then
-
-        RequestModel(GetHashKey("a_f_m_beach_01"))
-        while not HasModelLoaded(GetHashKey("a_f_m_beach_01")) do
-            Wait(10)
-        end
-
-		xSpawnedCoord = xCoord
-		ySpawnedCoord = yCoord
-		zSpawnedCoord = zCoord
-		Spawnedheading = heading
-
-        ped = CreatePed(4, GetHashKey("a_f_m_beach_01"), xCoord, yCoord, zCoord - 1.0, heading, false, false)
-        FreezeEntityPosition(ped, true)
-        SetEntityHeading(ped, heading)
-        SetEntityInvincible(ped, true)
-        SetBlockingOfNonTemporaryEvents(ped, true)
-        PedCreated = true
-    end
-
 	if item == FinishItem then
-        --[[ TODO: Null Abfrage ]]
-		mainMenu:Visible(false)
-		TriggerServerEvent('tunlysPedMaker:server:insertJSON', NameStr, xSpawnedCoord, ySpawnedCoord, zSpawnedCoord, Spawnedheading, respedModel, RenderDistStr)		
-		TriggerServerEvent('tunlysPedMaker:server:restartScript')
+		if NameStr ~= "" then
+			continue:Visible(false)
+			TriggerServerEvent('tunlysPedMaker:server:insertJSON', NameStr, xSpawnedCoord, ySpawnedCoord, zSpawnedCoord, Spawnedheading, respedModel, RenderDistStr)		
+			TriggerServerEvent('tunlysPedMaker:server:restartScript')
+			SendNotification("~g~Successfully created "..NameStr.."!")
+			NameStr = ""
+		else
+			SendNotification("~r~You have to set a Name!")
+		end
     end
 end
 
@@ -1006,7 +1078,7 @@ AddEventHandler('onResourceStart', function(resourceName)
 	TriggerServerEvent('tunlysPedMaker:server:refreshJSON')
 	TriggerServerEvent('tunlysPedMaker:server:spawnPeds')
 end)
-  
+
 
 RegisterNetEvent('tunlysPedMaker:client:spawnPeds')
 AddEventHandler('tunlysPedMaker:client:spawnPeds', function(pedsRes) 
@@ -1016,26 +1088,22 @@ end)
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
-
+		
         local player = PlayerPedId()
         local lplayerCoords = GetEntityCoords(player)
-
+		
         xCoordItem:RightLabel(math.round(lplayerCoords.x, 3))
         yCoordItem:RightLabel(math.round(lplayerCoords.y, 3))
         zCoordItem:RightLabel(math.round(lplayerCoords.z, 3))
         headingItem:RightLabel(math.round(GetEntityHeading(player), 3))
-
+		
         if isMenuOpen then
             xCoord = lplayerCoords.x
             yCoord = lplayerCoords.y
             zCoord = lplayerCoords.z
             heading = GetEntityHeading(player)
         end
-
-		--[[ if mainMenu:Visible(false) then
-			isMenuOpen = false
-		end ]]
-
+		
         _menuPool:ProcessMenus()
     end 
 end)
@@ -1043,14 +1111,14 @@ end)
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(500)
-
+		
         local player = PlayerPedId()
         local lplayerCoords = GetEntityCoords(player)
-
+		
 		if spawnedPeds then 
 			for i=1, #spawnedPeds, 1 do
 				v = spawnedPeds[i]
-
+				
 				local distance = Vdist(lplayerCoords.x, lplayerCoords.y, lplayerCoords.z, tonumber(spawnedPeds[i].x), tonumber(spawnedPeds[i].y), tonumber(spawnedPeds[i].z - 1.0))
 				if distance < tonumber(spawnedPeds[i].renderDist) then
 					if not v.isRendered then
@@ -1064,7 +1132,7 @@ Citizen.CreateThread(function()
 						SetEntityHeading(lped, tonumber(spawnedPeds[i].heading))
 						SetEntityInvincible(lped, true)
 						SetBlockingOfNonTemporaryEvents(lped, true)
-
+						
 						v.ped = lped
 						v.isRendered = true
 					end
@@ -1078,8 +1146,8 @@ Citizen.CreateThread(function()
     end 
 end)
 
-RegisterCommand("ped:make", function(source, args, rawCommand)
-    mainMenu:Visible(not mainMenu:Visible())
+RegisterCommand("pedmaker", function(source, args, rawCommand)
+    pedMenu:Visible(not pedMenu:Visible())
     isMenuOpen = true
 end, false)
 
@@ -1104,3 +1172,10 @@ function KeyboardInput(TextEntry, ExampleText, MaxStringLenght)
 		return nil
 	end
 end
+
+function SendNotification(message)
+	SetNotificationTextEntry("STRING")
+	AddTextComponentString(message)
+	DrawNotification(0,1)
+end
+
