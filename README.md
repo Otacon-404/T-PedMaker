@@ -31,3 +31,6 @@ How to remove a Ped:
 6. Restart the Script to remove the Peds fully !!!
 
 !!! NONE OF THESE STEPS ARE SKIPABLE !!!
+
+
+YOUR NOT ALLOWED TO REUPLOAD THIS SCRIPT !!!
